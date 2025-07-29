@@ -1,0 +1,6 @@
+.idea
+.DS_Store
+notes.txt
+db.sqlite3
+schema.png
+**__pycache__
