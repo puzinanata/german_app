@@ -1,0 +1,80 @@
+--sqlite
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE "user" (
+  "id" INTEGER PRIMARY KEY,
+  "username" VARCHAR,
+  "email" VARCHAR,
+  "created_at" TIMESTAMP
+);
+
+CREATE TABLE "lesson_property" (
+  "id" INTEGER PRIMARY KEY,
+  "type" VARCHAR,
+  "subtype" VARCHAR
+);
+
+CREATE TABLE "lesson" (
+  "id" INTEGER PRIMARY KEY,
+  "title" VARCHAR,
+  "user_id" INTEGER,
+  "property_id" INTEGER,
+  "is_review" BOOLEAN,
+  FOREIGN KEY ("user_id") REFERENCES "user" ("id"),
+  FOREIGN KEY ("property_id") REFERENCES "lesson_property" ("id")
+);
+
+CREATE TABLE "exercise" (
+  "id" INTEGER PRIMARY KEY,
+  "title" VARCHAR,
+  "content" VARCHAR,
+  "lesson_id" INTEGER,
+  FOREIGN KEY ("lesson_id") REFERENCES "lesson" ("id")
+);
+
+CREATE TABLE "question" (
+  "id" INTEGER PRIMARY KEY,
+  "content" VARCHAR,
+  "exercise_id" INTEGER,
+  "expected_answer" BOOLEAN,
+  FOREIGN KEY ("exercise_id") REFERENCES "exercise" ("id")
+);
+
+CREATE TABLE "user_lesson_attempt" (
+  "id" INTEGER PRIMARY KEY,
+  "user_id" INTEGER,
+  "lesson_id" INTEGER,
+  "attempt_number" INTEGER,
+  "is_first_attempt" BOOLEAN,
+  "correct_answers" INTEGER,
+  "incorrect_answers" INTEGER,
+  "completed" BOOLEAN,
+  "started_at" TIMESTAMP,
+  "completed_at" TIMESTAMP,
+  FOREIGN KEY ("user_id") REFERENCES "user" ("id"),
+  FOREIGN KEY ("lesson_id") REFERENCES "lesson" ("id")
+);
+
+CREATE TABLE "answer" (
+  "id" INTEGER PRIMARY KEY,
+  "question_id" INTEGER,
+  "actual_answer" BOOLEAN,
+  "user_id" INTEGER,
+  "lesson_id" INTEGER,
+  "exercise_id" INTEGER,
+  "attempt_id" INTEGER,
+  FOREIGN KEY ("question_id") REFERENCES "question" ("id"),
+  FOREIGN KEY ("user_id") REFERENCES "user" ("id"),
+  FOREIGN KEY ("lesson_id") REFERENCES "lesson" ("id"),
+  FOREIGN KEY ("attempt_id") REFERENCES "user_lesson_attempt" ("id")
+);
+
+CREATE TABLE "personal_lesson" (
+  "id" INTEGER PRIMARY KEY,
+  "user_id" INTEGER,
+  "is_review_lesson_id" INTEGER,
+  "original_exercise_id" INTEGER,
+  FOREIGN KEY ("user_id") REFERENCES "user" ("id"),
+  FOREIGN KEY ("is_review_lesson_id") REFERENCES "lesson" ("id"),
+  FOREIGN KEY ("original_exercise_id") REFERENCES "exercise" ("id")
+);
