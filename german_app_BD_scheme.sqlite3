@@ -3,6 +3,8 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE "user" (
   "id" INTEGER PRIMARY KEY,
+  "name" VARCHAR,
+  "last_name" VARCHAR,
   "username" VARCHAR,
   "email" VARCHAR,
   "created_at" TIMESTAMP
@@ -11,7 +13,8 @@ CREATE TABLE "user" (
 CREATE TABLE "lesson_property" (
   "id" INTEGER PRIMARY KEY,
   "type" VARCHAR,
-  "subtype" VARCHAR
+  "subtype" VARCHAR,
+  "sub_subtype" VARCHAR
 );
 
 CREATE TABLE "lesson" (
@@ -24,7 +27,14 @@ CREATE TABLE "lesson" (
   FOREIGN KEY ("property_id") REFERENCES "lesson_property" ("id")
 );
 
-CREATE TABLE "exercise" (
+CREATE TABLE "instruction" (
+  "id" INTEGER PRIMARY KEY,
+  "property_id" INTEGER,
+  "content" VARCHAR,
+  FOREIGN KEY ("property_id") REFERENCES "lesson_property" ("id")
+);
+
+CREATE TABLE "input" (
   "id" INTEGER PRIMARY KEY,
   "title" VARCHAR,
   "content" VARCHAR,
@@ -32,12 +42,27 @@ CREATE TABLE "exercise" (
   FOREIGN KEY ("lesson_id") REFERENCES "lesson" ("id")
 );
 
-CREATE TABLE "question" (
+CREATE TABLE "item" (
   "id" INTEGER PRIMARY KEY,
   "content" VARCHAR,
-  "exercise_id" INTEGER,
+  "input_id" INTEGER,
   "expected_answer" BOOLEAN,
-  FOREIGN KEY ("exercise_id") REFERENCES "exercise" ("id")
+  FOREIGN KEY ("input_id") REFERENCES "input" ("id")
+);
+
+CREATE TABLE "answer" (
+  "id" INTEGER PRIMARY KEY,
+  "item_id" INTEGER,
+  "actual_answer" BOOLEAN,
+  "user_id" INTEGER,
+  "lesson_id" INTEGER,
+  "input_id" INTEGER,
+  "attempt_id" INTEGER,
+  FOREIGN KEY ("item_id") REFERENCES "item" ("id"),
+  FOREIGN KEY ("user_id") REFERENCES "user" ("id"),
+  FOREIGN KEY ("lesson_id") REFERENCES "lesson" ("id"),
+  FOREIGN KEY ("input_id") REFERENCES "input" ("id"),
+  FOREIGN KEY ("attempt_id") REFERENCES "user_lesson_attempt" ("id")
 );
 
 CREATE TABLE "user_lesson_attempt" (
@@ -47,7 +72,7 @@ CREATE TABLE "user_lesson_attempt" (
   "attempt_number" INTEGER,
   "is_first_attempt" BOOLEAN,
   "correct_answers" INTEGER,
-  "incorrect_answers" INTEGER,
+  "wrong_answers" INTEGER,
   "completed" BOOLEAN,
   "started_at" TIMESTAMP,
   "completed_at" TIMESTAMP,
@@ -55,26 +80,46 @@ CREATE TABLE "user_lesson_attempt" (
   FOREIGN KEY ("lesson_id") REFERENCES "lesson" ("id")
 );
 
-CREATE TABLE "answer" (
-  "id" INTEGER PRIMARY KEY,
-  "question_id" INTEGER,
-  "actual_answer" BOOLEAN,
-  "user_id" INTEGER,
-  "lesson_id" INTEGER,
-  "exercise_id" INTEGER,
-  "attempt_id" INTEGER,
-  FOREIGN KEY ("question_id") REFERENCES "question" ("id"),
-  FOREIGN KEY ("user_id") REFERENCES "user" ("id"),
-  FOREIGN KEY ("lesson_id") REFERENCES "lesson" ("id"),
-  FOREIGN KEY ("attempt_id") REFERENCES "user_lesson_attempt" ("id")
-);
-
-CREATE TABLE "personal_lesson" (
+CREATE TABLE "custom_lesson" (
   "id" INTEGER PRIMARY KEY,
   "user_id" INTEGER,
   "is_review_lesson_id" INTEGER,
-  "original_exercise_id" INTEGER,
+  "original_input_id" INTEGER,
   FOREIGN KEY ("user_id") REFERENCES "user" ("id"),
   FOREIGN KEY ("is_review_lesson_id") REFERENCES "lesson" ("id"),
-  FOREIGN KEY ("original_exercise_id") REFERENCES "exercise" ("id")
+  FOREIGN KEY ("original_input_id") REFERENCES "input" ("id")
+);
+
+CREATE TABLE "vocabulary" (
+  "id" INTEGER PRIMARY KEY,
+  "word" VARCHAR,
+  "explanation" VARCHAR
+);
+
+CREATE TABLE "vocabulary_input" (
+  "id" INTEGER PRIMARY KEY,
+  "input_id" INTEGER,
+  "vocabulary_id" INTEGER,
+  FOREIGN KEY ("input_id") REFERENCES "input" ("id"),
+  FOREIGN KEY ("vocabulary_id") REFERENCES "vocabulary" ("id")
+);
+
+CREATE TABLE "vocabulary_item" (
+  "id" INTEGER PRIMARY KEY,
+  "item_id" INTEGER,
+  "vocabulary_id" INTEGER,
+  FOREIGN KEY ("item_id") REFERENCES "item" ("id"),
+  FOREIGN KEY ("vocabulary_id") REFERENCES "vocabulary" ("id")
+);
+
+CREATE TABLE "custom_vocabulary" (
+  "id" INTEGER PRIMARY KEY,
+  "user_id" INTEGER,
+  "vocabulary_id" INTEGER,
+  "input_id" INTEGER,
+  "item_id" INTEGER,
+  FOREIGN KEY ("user_id") REFERENCES "user" ("id"),
+  FOREIGN KEY ("vocabulary_id") REFERENCES "vocabulary" ("id"),
+  FOREIGN KEY ("input_id") REFERENCES "input" ("id"),
+  FOREIGN KEY ("item_id") REFERENCES "item" ("id")
 );
